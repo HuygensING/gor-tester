@@ -31,3 +31,7 @@ The middleware allows you to write [rules](/src/main/java/nl/knaw/huygens/gortes
     * To [unzip](/src/main/java/nl/knaw/huygens/gortester/rewriterules/GunzipRule.java) the response so that they can be better compared.
  
 Gor sends the requests and responses in an undefined order to the middleware, but your rule's methods will always be called with the data you need (the middleware stores data if needed and waits for the rest to arrive).
+
+## How do I use it?
+
+At the moment you're expected to write your own rules and add the to the constructor call in [App.java](/src/main/java/nl/knaw/huygens/gortester/App.java) if there is a need I could make it more configurable and let you specify what rules to load in the command line.
