@@ -35,9 +35,8 @@ public class App {
         new GunzipRule(results)
       );
       while (sc.hasNext()) {
-        String line = sc.nextLine();
-        GorMessage statement = GorMessage.make(line, results);
         try {
+          GorMessage statement = GorMessage.make(sc.nextLine(), results);
           gorTester.handleLine(out, results, statement);
         } catch (Exception e) {
           e.printStackTrace(results);
