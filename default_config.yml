@@ -1,0 +1,17 @@
+outputDir: output
+differs:
+  - type: nl.knaw.huygens.gortester.differs.StatusDiffer
+  - type: nl.knaw.huygens.gortester.differs.HeaderDiffer
+    ignoreHeader:
+      - Date
+  - type: nl.knaw.huygens.gortester.differs.BinaryBodyDiffer
+  #  criteria:
+  #   headerMatches:
+  #     Content-Type: text/.*
+  #   urlMatches: /prefix/.*
+rewriteRules:
+  - type: nl.knaw.huygens.gortester.rewriterules.IgnoreStaticRule
+  - type: nl.knaw.huygens.gortester.rewriterules.UnchunkRule
+  - type: nl.knaw.huygens.gortester.rewriterules.GunzipRule
+  - type: nl.knaw.huygens.gortester.rewriterules.StoreAuthRule
+

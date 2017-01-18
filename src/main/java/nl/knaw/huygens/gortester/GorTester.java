@@ -1,6 +1,7 @@
 package nl.knaw.huygens.gortester;
 
 import com.google.common.io.Files;
+import nl.knaw.huygens.gortester.differs.Differ;
 import nl.knaw.huygens.gortester.messages.GorMessage;
 import nl.knaw.huygens.gortester.messages.GorOriginalResponse;
 import nl.knaw.huygens.gortester.messages.GorReplayedResponse;
@@ -8,15 +9,13 @@ import nl.knaw.huygens.gortester.messages.GorRequest;
 import nl.knaw.huygens.gortester.rewriterules.RewriteRule;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class GorTester {
 
@@ -24,15 +23,16 @@ public class GorTester {
   private final Map<String, GorOriginalResponse> originalResponses;
   private final Map<String, GorRequest> requests;
   private final String dirname;
-  private final RewriteRule[] rewriteRules;
+  private final List<RewriteRule> rewriteRules;
+  private final List<Differ> differs;
 
-  public GorTester(String dirname, RewriteRule... rewriteRules) throws FileNotFoundException,
-      UnsupportedEncodingException {
-    this.dirname = dirname;
-    this.rewriteRules = rewriteRules;
+  public GorTester(Config config) {
+    this.dirname = config.getOutputDir();
+    this.rewriteRules = config.getRewriteRules();
     fastReplayedResponses = new HashMap<>();
     originalResponses = new HashMap<>();
     requests = new HashMap<>();
+    differs = config.getDiffers();
   }
 
   public void handleLine(PrintStream out, PrintWriter results, GorMessage statement) {
@@ -97,7 +97,16 @@ public class GorTester {
 
   private void handleReplayedResponse(PrintWriter results, GorReplayedResponse statement, GorOriginalResponse
     originalResponse, Map<String, GorRequest> requests) {
+
     GorRequest request = requests.get(statement.getId());
+    try {
+      Files.write(
+        statement.getHttpBlock(results),
+        new File(dirname + File.separator + request.getId() + "_unmodifiedReplay.txt")
+      );
+    } catch (IOException e) {
+      e.printStackTrace(results);
+    }
     for (RewriteRule rewriteRule : rewriteRules) {
       rewriteRule.handleReplayResponse(request, originalResponse, statement);
     }
@@ -106,34 +115,23 @@ public class GorTester {
   }
 
   private void compare(GorRequest request, GorOriginalResponse orig, GorReplayedResponse replay, PrintWriter results) {
-    boolean differs = false;
-    results.println(replay.getId());
-
-    if (orig.getStatus() != replay.getStatus()) {
-      results.println("  had differing status");
-      differs = true;
-    }
-
-    if (!Arrays.equals(orig.getBody(), replay.getBody())) {
-      results.println("  had differing response bodies");
-      differs = true;
-    }
-
-    for (Map.Entry<String, String> entry : orig.getHeaderList()) {
-      Optional<String> replayedHeader = replay.getHeader(entry.getKey());
-      if (replayedHeader.isPresent()) {
-        if (!replayedHeader.get().equals(entry.getValue())) {
-          results.println("  header differs. " + entry.getKey() + ": " + entry.getValue() + " - " +
-            replayedHeader.get());
-          differs = true;
-        }
-      } else {
-        results.println("  replayed does not contain " + entry.getKey() + ": " + entry.getValue());
-        differs = true;
+    AtomicBoolean headerWritten = new AtomicBoolean(false);
+    AtomicBoolean isDifferent = new AtomicBoolean(false);
+    for (Differ differ : this.differs) {
+      if (differ.accept(request, orig)) {
+        differ.diff(orig, replay).ifPresent(error -> {
+          isDifferent.set(true);
+          if (!headerWritten.getAndSet(true)) {
+            results.println(replay.getId() + " " + request.getPath());
+          }
+          for (String line : error.split("\n")) {
+            results.println("  " + line);
+          }
+        });
       }
-      //replayed is allowed to have more headers.
     }
-    if (differs) {
+
+    if (isDifferent.get()) {
       writeToFile(request, orig, replay, results);
     }
   }
@@ -142,9 +140,9 @@ public class GorTester {
     results) {
     try {
       String slash = File.separator;
-      Files.write(request.getHttpBlock(results), new File(dirname + slash + request.getId() + "_req.txt"));
-      Files.write(orig.getHttpBlock(results), new File(dirname + slash + request.getId() + "_orig.txt"));
-      Files.write(replayed.getHttpBlock(results), new File(dirname + slash + request.getId() + "_repl.txt"));
+      Files.write(request.getHttpBlock(results), new File(dirname + slash + request.getId() + "_request.txt"));
+      Files.write(orig.getHttpBlock(results), new File(dirname + slash + request.getId() + "_origResponse.txt"));
+      Files.write(replayed.getHttpBlock(results), new File(dirname + slash + request.getId() + "_modifiedReplay.txt"));
     } catch (IOException e) {
       e.printStackTrace(results);
     }

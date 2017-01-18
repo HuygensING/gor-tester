@@ -1,19 +1,30 @@
 package nl.knaw.huygens.gortester.rewriterules;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import nl.knaw.huygens.gortester.messages.GorOriginalResponse;
 import nl.knaw.huygens.gortester.messages.GorReplayedResponse;
 import nl.knaw.huygens.gortester.messages.GorRequest;
 
+import java.io.PrintWriter;
 import java.util.concurrent.ExecutionException;
 
 public class StoreAuthRule implements RewriteRule {
 
+  private PrintWriter result;
+
+  @Override
+  public void setOutputWriter(PrintWriter outputWriter) {
+    result = outputWriter;
+  }
+
   private final Cache<String, String> auths;
 
-  public StoreAuthRule() {
-    auths = CacheBuilder.newBuilder().maximumSize(1000).build();
+  @JsonCreator
+  public StoreAuthRule(@JsonProperty("maxSize") long maxSize) {
+    auths = CacheBuilder.newBuilder().maximumSize(maxSize).build();
   }
 
   @Override

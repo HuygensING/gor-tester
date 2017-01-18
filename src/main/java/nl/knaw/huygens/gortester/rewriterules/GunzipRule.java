@@ -13,10 +13,11 @@ import java.util.zip.GZIPInputStream;
 
 public class GunzipRule implements RewriteRule {
 
-  private final PrintWriter result;
+  private PrintWriter result;
 
-  public GunzipRule(PrintWriter result) {
-    this.result = result;
+  @Override
+  public void setOutputWriter(PrintWriter outputWriter) {
+    result = outputWriter;
   }
 
   @Override

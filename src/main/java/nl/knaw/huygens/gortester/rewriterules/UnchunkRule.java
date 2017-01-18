@@ -9,10 +9,12 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 
 public class UnchunkRule implements RewriteRule {
-  private final PrintWriter writer;
 
-  public UnchunkRule(PrintWriter writer) {
-    this.writer = writer;
+  private PrintWriter result;
+
+  @Override
+  public void setOutputWriter(PrintWriter outputWriter) {
+    result = outputWriter;
   }
 
   @Override

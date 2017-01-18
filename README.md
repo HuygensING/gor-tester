@@ -13,7 +13,7 @@ mvn package
 Run it with 
 
 ```
-gor --input-raw <your-prod-server> --output-http=<your-staging-server> --middleware "./target/appassembler/bin/gor-tester outputdirname" --input-raw-track-response
+gor --input-raw <your-prod-server> --output-http=<your-staging-server> --middleware "./target/appassembler/bin/gor-tester default_config.yml" --input-raw-track-response
 ```
 
 ## What does it do?
@@ -26,12 +26,21 @@ The middleware allows you to write [rules](/src/main/java/nl/knaw/huygens/gortes
  * [prevent certain requests](/src/main/java/nl/knaw/huygens/gortester/rewriterules/IgnoreStaticRule.java) from being replicated to the auth server
  * modify the replay request. To [replace auth headers](/src/main/java/nl/knaw/huygens/gortester/rewriterules/StoreAuthRule.java) for example.
  * modify the original or replay response. 
-    * To [overwrite the replay response's date](/src/main/java/nl/knaw/huygens/gortester/rewriterules/IgnoreDateDifferenceRule.java) with the one from the original. 
     * To [unchunk](/src/main/java/nl/knaw/huygens/gortester/rewriterules/UnchunkRule.java) the response. 
     * To [unzip](/src/main/java/nl/knaw/huygens/gortester/rewriterules/GunzipRule.java) the response so that they can be better compared.
- 
+
+The middleware also allows you to write [rules](/src/main/java/nl/knaw/huygens/gortester/differs/Differ.java) that
+
+ * [Check if the replayed response contains all the headers of the original response](/src/main/java/nl/knaw/huygens/gortester/differs/HeaderDiffer.java) and possibly more
+ * [Check if the status codes match](/src/main/java/nl/knaw/huygens/gortester/differs/StatusDiffer.java)
+ * [Check if the bodies are exactly equal](/src/main/java/nl/knaw/huygens/gortester/differs/BinaryBodyDiffer.java)
+
 Gor sends the requests and responses in an undefined order to the middleware, but your rule's methods will always be called with the data you need (the middleware stores data if needed and waits for the rest to arrive).
 
 ## How do I use it?
 
-At the moment you're expected to write your own rules and add the to the constructor call in [App.java](/src/main/java/nl/knaw/huygens/gortester/App.java) if there is a need I could make it more configurable and let you specify what rules to load in the command line.
+A few rules are provided. 
+You configure them in a [yaml file](default_config.yml). 
+There is a good chance that the provided rules are not enough and you'll have to add some rules of yourself.
+
+Pull requests welcome :)

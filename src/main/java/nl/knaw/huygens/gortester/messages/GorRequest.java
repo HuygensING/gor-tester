@@ -39,16 +39,14 @@ public class GorRequest extends GorMessage {
   }
 
   private void parseUrl(String url) {
-    if (url.contains("?")) {
-      String[] urlAndQueryParameters = url.split("\\?");
-      path = urlAndQueryParameters[0];
+    String[] urlAndQueryParameters = url.split("\\?");
+    path = urlAndQueryParameters[0];
+    if (urlAndQueryParameters.length > 1) {
       for (String queryParameter : urlAndQueryParameters[1].split("&")) {
         String[] parameter = queryParameter.split("=");
 
         queryParameters.put(parameter[0], parameter[1]);
       }
-    } else {
-      path = url;
     }
   }
 

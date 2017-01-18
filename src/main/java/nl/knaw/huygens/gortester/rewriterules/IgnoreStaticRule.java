@@ -4,7 +4,17 @@ import nl.knaw.huygens.gortester.messages.GorOriginalResponse;
 import nl.knaw.huygens.gortester.messages.GorReplayedResponse;
 import nl.knaw.huygens.gortester.messages.GorRequest;
 
+import java.io.PrintWriter;
+
 public class IgnoreStaticRule implements RewriteRule {
+
+  private PrintWriter result;
+
+  @Override
+  public void setOutputWriter(PrintWriter outputWriter) {
+    result = outputWriter;
+  }
+
   @Override
   public void modifyRequestForReplay(GorRequest request) {
 
