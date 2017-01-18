@@ -1,14 +1,22 @@
 package nl.knaw.huygens.gortester.rewriterules;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.gortester.messages.GorOriginalResponse;
 import nl.knaw.huygens.gortester.messages.GorReplayedResponse;
 import nl.knaw.huygens.gortester.messages.GorRequest;
 
 import java.io.PrintWriter;
 
-public class IgnoreStaticRule implements RewriteRule {
+public class BlockReplayRule implements RewriteRule {
 
+  private final String pathRegex;
   private PrintWriter result;
+
+  @JsonCreator
+  private BlockReplayRule(@JsonProperty("pathMatches") String pathRegex) {
+    this.pathRegex = pathRegex;
+  }
 
   @Override
   public void setOutputWriter(PrintWriter outputWriter) {
@@ -22,11 +30,7 @@ public class IgnoreStaticRule implements RewriteRule {
 
   @Override
   public boolean blockReplay(GorRequest request) {
-    if (request.getPath().startsWith("/static")) {
-      return true;
-    } else {
-      return false;
-    }
+    return request.getPath().matches(pathRegex);
   }
 
   @Override

@@ -23,7 +23,7 @@ This middleware will compare the response from the acceptation server to that of
 
 The middleware allows you to write [rules](/src/main/java/nl/knaw/huygens/gortester/rewriterules/RewriteRule.java) that
 
- * [prevent certain requests](/src/main/java/nl/knaw/huygens/gortester/rewriterules/IgnoreStaticRule.java) from being replicated to the auth server
+ * [prevent certain requests](/src/main/java/nl/knaw/huygens/gortester/rewriterules/BlockReplayRule.java) from being replicated to the auth server
  * modify the replay request. To [replace auth headers](/src/main/java/nl/knaw/huygens/gortester/rewriterules/StoreAuthRule.java) for example.
  * modify the original or replay response. 
     * To [unchunk](/src/main/java/nl/knaw/huygens/gortester/rewriterules/UnchunkRule.java) the response. 
