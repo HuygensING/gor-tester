@@ -2,6 +2,7 @@
 
 A [gor](https://github.com/buger/gor) middleware app that allows you to verify if your acc server is sending (more or less) the same responses as your prod server.
 
+## Have tested this with the gor version [1.0.0](https://github.com/buger/goreplay/releases/tag/v1.0.0)
 ## getting up and running
 
 Build it with
